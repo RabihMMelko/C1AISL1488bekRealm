@@ -7,7 +7,7 @@
 <h2> Contenu: </h2>
 <ol>
 <li>Introduction: le Quoi</li>
-<li>Configuration: Elements Generaux</li>
+<li>Configuration Generale d'un Realm</li>
 <li>Fonctionnalités Communes</li>
 <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
 </ol>
@@ -31,7 +31,7 @@ Comme il est désirable de connecter la <em>Servlet</em> à une base de données
 <u>
 JAASRealm
 </u>
- - L'accès à l'information est effectué à travers le framework <u> Java Authentication &amp; Authorization Service (JAAS) </u>
+ - L'accès à l'information est effectué à travers le framework <i> Java Authentication &amp; Authorization Service (JAAS) </i>
 </li>
 </ul>
 Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l'intégrer avec Tomcat. Pour cela, il faut:
@@ -42,5 +42,16 @@ Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l
 <li>Placer ce Realm dans <b>$CATALINA_HOME/lib</b></li>
 <li>Déclarer le Realm</li>
 </ol>
+<h2>Configuration Generale d'un Realm</h2>
+<p> En général, un Realm est configuré еn ajoutant au fichier <b>conf/server.xml</b> un élément sous la forme:
+<div style = 'background-color:#a2a2dc'>
+
+&lt;Realm className="...nom de classe de l'implémentation"<br> ...autres attributs.../&gt;
+
+</div>
+<p> La position du Realm permet de définir sa visibilité:
+<ul>
+<li><i>Dans &lt;Engine&gt;</i>- Le Realm est partagé pour toutes les applications sur tous les hôtes, sauf si défini explicitement dans un élément <i>&lt;Host&gt;</i> ou <i>&lt;Context&gt;</i></li>
+</ul>
 </body>
 </html>
