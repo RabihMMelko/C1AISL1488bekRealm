@@ -27,7 +27,20 @@ Comme il est désirable de connecter la <em>Servlet</em> à une base de données
 <li><u>JNDIRealm</u> - L'information est stockée sur un serveur LDAP, accédée par le biaisde JNDI.</li>
 <li><u>UserDatabaseRealm</u> - L'information est stockée dans une ressource UserDatabase JNDI, typiquement dans un document XML (conf/tomcat-users.xml).</li>
 <li><u>MemoryRealm</u> - Une collection est initialisée dans un objet mémoire à travers un fichier XML (conf/tomcat-users.xml)</li>
+<li>
+<u>
+JAASRealm
+</u>
+ - L'accès à l'information est effectué à travers le framework <u> Java Authentication &amp; Authorization Service (JAAS) </u>
+</li>
 </ul>
+Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l'intégrer avec Tomcat. Pour cela, il faut:
 </p>
+<br>
+<ol>
+<li> Implémenter <b>org.apache.catalina.Realm</b></li>
+<li>Placer ce Realm dans <b>$CATALINA_HOME/lib</b></li>
+<li>Déclarer le Realm</li>
+</ol>
 </body>
 </html>
