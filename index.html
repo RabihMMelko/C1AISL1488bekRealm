@@ -7,8 +7,17 @@
 <h2> Contenu: </h2>
 <ol>
 <li>Introduction: le Quoi</li>
-<li>Types de Plugins</li>
-<li>Configuration Generale d'un Realm</li>
+<li>Types d'implémentations</li>
+<ol>
+<li>JDBCRealm</li>
+<li>DataSourceRealm</li>
+<li>JNDIRealm</li>
+<li>UserDatabaseRealm</li>
+<li>MemoryRealm</li>
+<li>JAASRealm</li>
+<li>CombinedRealm</li>
+<li>LockOutRealm</li>
+</ol>
 <li>Fonctionnalités Communes</li>
 <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
 </ol>
@@ -26,16 +35,35 @@ Comme il est désirable de connecter la <em>Servlet</em> à une base de données
 <ul>
 <li><u><b>JDBCRealm</b></u>:<p> Dérivé de l'interface Realm de Tomcat, la recherche des utilisateurs, roles et mots de passe se fait lors d'une connection entre Catalina et une BD relationnelle, en utilisant un driver JDBC (tel MySQL Connector).</p>
   <p>Les modifications sur la BD sont immédiates, permettant de maintenir des authentifications actualisées.</p>
-  <p>Quand un utilisateur accède pourla première fois à une ressource protégée, Tomcat appelle la méthode authenticate(), afin que toute actualisation soit immédiatement reflétée. L'authentification de cet utilisateur sera mise en cache sur la durée de la session.</p>
+  <p>Quand un utilisateur accède pourla première fois à une ressource protégée, Tomcat appelle la méthode authenticate(), afin que toute actualisation soit immédiatement reflétée. L'authentification de cet utilisateur sera mise en cache sur la durée de la session. Mais toute modification ne sera reflétée que lors d'une nouvelle session.</p>
   <p>La flexibilité de configuration permet de l'adapter en fonction du modèle sur la base de donnée, tout en respectant les critères suivants:</p>
 <br>
 <ul>
-<li> La table 'users' contient au moins deux attributs: Nom Utilisateur et Mot de Passe.</li>
-<li>La table des roles utilisateurs doit contenir des roles valides lié aux utilisateurs.</li>
+<li>Existence d'une table "Utilisateurs", contenant les utilisateurs reconnaissables par le <i>Realm</i>.</li>
+<li>Cette table contient au moins deux attributs: Une pour les noms utilisateurs et une pour les mots de passe. A noter que ce dernier peut être stocké en clair ou hâché.</li>
+<li>
+Existence d'une table "Roles" contenant les roles affectés par utilisateur. Un utilisateur peut avoir 0, 1 ou plusieurs roles.</li>
+<li>Deux colonnes au minimum sont requises pour cette table: Nom utilisateur (comme figurant dans la table "Utilisateurs") et Nom de Role.</li>
 </ul></li></p>
 </li>
-<li><u><b>DataSourceRealm</b></u>:<p> Similaire à JDBCRealm dans l'appartenance à l'interface Realm de Tomcat, la connection est effectuée via JNDI. Cette implémentation est avantageuse car JDBCRealm ne permet que de se connecter à une seule BD, soit une authentification à la fois. DataSourceRealm, quant à elle, permet plusieurs authentification simultanées par regroupement de connexions.</li></p>
-<li><u>JNDIRealm</u> - L'information est stockée sur un serveur LDAP, accédée par le biais de JNDI.</li>
+<p>Pour configurer Tomcat afin qu'il utilise JDBCRealm, il faut:</p>
+<ol>
+<li>Créer les tables dans la base de données conformement à la spécification ci-dessus.</li>
+<li>Configurer un utilisateur (et son mot de passe) utilisé par Tomcat, avec permission de lecture sur les deux tables précédentes (Tomcat ne modifiera pas ces tables)</li>
+<li>Placer une copie du drier JDBC utilisé dans<strong> $CATALINA_HOME/lib</strong>. Seulement les fichiers JAR seront reconnus.</li>
+<li>Créer l'élément <em>&lt;Realm&gt; </em>dans <strong>$CATALINA_BASE/conf/server.xml</strong></li>
+<li>Redémarrer Tomcat.</li>
+</ol>
+<p>Un exemple d'objet Realm pour une base de données MySQL nommée &quot;authority&quot;, avec un utilisateur dbuser/dbpass ressemblerait à:</p>
+<pre><code>
+&lt;Realm className="org.apache.catalina.realm.JDBCRealm"
+      driverName="org.gjt.mm.mysql.Driver"
+   connectionURL="jdbc:mysql://localhost/authority?user=dbuser&amp;amp;password=dbpass"
+       userTable="users" userNameCol="user_name" userCredCol="user_pass"
+   userRoleTable="user_roles" roleNameCol="role_name"/&gt;</code></pre>
+<p>&nbsp;</p>
+<li><u><b>DataSourceRealm</b></u>:<p> Similaire à JDBCRealm dans l'appartenance à l'interface Realm de Tomcat et la configuration, la connection est effectuée via JNDI. Cette implémentation est avantageuse car JDBCRealm ne permet que de se connecter à une seule BD, soit une authentification à la fois. DataSourceRealm, quant à elle, permet plusieurs authentification simultanées par regroupement de connexions.</li></p>
+<li><u><b>JNDIRealm</b></u>:<p> L'information est stockée sur un serveur LDAP, accédée par le biais de JNDI.</li></p>
 <li><u>UserDatabaseRealm</u> - L'information est stockée dans une ressource UserDatabase JNDI, typiquement dans un document XML (conf/tomcat-users.xml).</li>
 <li><u>MemoryRealm</u> - Une collection est initialisée dans un objet mémoire à travers un fichier XML (conf/tomcat-users.xml)</li>
 <li>
@@ -63,6 +91,8 @@ Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l
 <p> La position du Realm permet de définir sa visibilité:
 <ul>
 <li><i>Dans &lt;Engine&gt;</i>- Le Realm est partagé pour toutes les applications sur tous les hôtes, sauf si défini explicitement dans un élément <i>&lt;Host&gt;</i> ou <i>&lt;Context&gt;</i></li>
+<li><i>Dans &lt;Host&gt;</i>- Le Realm est partagé pour toutes les applications sur l'hôte spécifique, sauf si défini explicitement dans un élément <i>&lt;Context&gt;</i></li>
+<li><i>Dans &lt;Context&gt;</i>- Le Realm est utilisé seulement pour cette application Web.</li>
 </ul>
 </body>
 </html>
