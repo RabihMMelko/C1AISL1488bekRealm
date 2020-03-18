@@ -63,7 +63,14 @@ Existence d'une table "Roles" contenant les roles affectés par utilisateur. Un 
    userRoleTable="user_roles" roleNameCol="role_name"/&gt;</code></pre>
 <p>&nbsp;</p>
 <li><u><b>DataSourceRealm</b></u>:<p> Similaire à JDBCRealm dans l'appartenance à l'interface Realm de Tomcat et la configuration, la connection est effectuée via JNDI. Cette implémentation est avantageuse car JDBCRealm ne permet que de se connecter à une seule BD, soit une authentification à la fois. DataSourceRealm, quant à elle, permet plusieurs authentification simultanées par regroupement de connexions.</li></p>
-<li><u><b>JNDIRealm</b></u>:<p> L'information est stockée sur un serveur LDAP, accédée par le biais de JNDI.</li></p>
+<li><u><b>JNDIRealm</b></u>:<p> Implémentation qui recherche les utilisateurs dans un serveur LDAP, accédé par un API JNDI.
+  <p><strong>Connection au repertoire:</strong>  
+  <p>La connection est définie par l'attribut <em>connectionURL</em>. Il s'ait d'une URL au format définit par le JNDI. Typiquement, c'est une URL LDAP spécifiant le nom du serveur auquel il faut se connecter, et -optionellement- le numero de port et le DN (nom distingué) du contexte racine requis.  
+  <p>Dans le cas où il existerait plusieurs fournisseurs, une <em>alternateURL</em> peut être configurée. Si la connexion sur <em>connectionURL</em> échoue, une tentative de connexion sera envoyée sur <em>alternateURL</em>.  
+  <p>Lors d'une connexion ayant pour but de vérifier un utilisateur, le Realm s'identifie au serveur à travers les données dans les attributs <strong>connectionName </strong>et <strong>connectionPassword</strong>. Le cas échéant, la connection est anonyme.  
+  <p><strong>Selection de l'utilisateur:</strong>  
+  <p>Chaque utilisateur doit figurer dans le répertoire en tant qu'élément dans <em>DirContext</em> définit dans <strong>connectionURL</strong>. Cette entrée utilisateur doit inclure le nom utilisateur.  
+  <p>Souvent, le nom des utilisateurs possède un format predeterminé (Exemple: <em>NumeroEtudiant_ISAE</em>). C'est pourquoi l'attribut <strong>userPattern</strong> peut être utilisé, avec {0} indiquant le lieu de substitution du nom utilisateur</li></p>
 <li><u>UserDatabaseRealm</u> - L'information est stockée dans une ressource UserDatabase JNDI, typiquement dans un document XML (conf/tomcat-users.xml).</li>
 <li><u>MemoryRealm</u> - Une collection est initialisée dans un objet mémoire à travers un fichier XML (conf/tomcat-users.xml)</li>
 <li>
