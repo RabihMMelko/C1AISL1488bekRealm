@@ -3,25 +3,59 @@
 <html>
 
 <body>
-    <h1>Tomcat Realm</h1>
+    <h1>Tomcat Realm pour sécuriser les accès application</h1>
 
     <h2> Contenu: </h2>
     <ol>
-        <li>Introduction: le Quoi</li>
-        <li>Types d'implémentations</li>
+        <li>Introduction Très Simplifiée à Tomcat et Terminologie</li>
+        <li>CATALINA_HOME et CATALINA_BASE</li>
+        <li>Tomcat Realm</li>
         <ol>
-            <li>JDBCRealm</li>
-            <li>DataSourceRealm</li>
-            <li>JNDIRealm</li>
-            <li>UserDatabaseRealm</li>
-            <li>MemoryRealm</li>
-            <li>JAASRealm</li>
-            <li>CombinedRealm</li>
-            <li>LockOutRealm</li>
+            <li>Introduction: le Quoi</li>
+          <li>Types d'implémentations</li>
+            <ol>
+                <li>JDBCRealm</li>
+                <li>DataSourceRealm</li>
+                <li>JNDIRealm</li>
+                <li>UserDatabaseRealm</li>
+                <li>MemoryRealm</li>
+                <li>JAASRealm</li>
+                <li>CombinedRealm</li>
+                <li>LockOutRealm</li>
+            </ol>
+          <li>Fonctionnalités Communes</li>
+            <li>Attributs</li>
+          <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
         </ol>
-        <li>Fonctionnalités Communes</li>
-        <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
     </ol>
+    
+    <h2>1. Introduction Très Simplifiée à Tomcat et Terminologie</h2>
+    
+    <p>Apache Tomcat est un conteneur web <em>open source</em> de servlets et JSP. Il implémente les spécifications des servlets et des JSP, est paramétrable à travers XML, inclut des outils de configuration et de gestion, ainsi qu'un serveur HTTP.</p>
+    
+    <p>Ecrit en Java, il peut s'exécuter via JVM sur tout système d'exploitation. La gestion des servlets est effectuée par un compilateur Jasper, qui parse les fichiers JSP afain de les compiler en code Java en tant que servlets. Un des avantages de Japser est la capcité à recompiler automatiquement les fichiers JSP modifiés.</p>
+    
+    <p>L'architecture du logiciel est définie comme suit:</p>
+<ul>
+        	<li>Un serveur en cours d'exécution.</li>
+            <li>Des services intermédiaires reliant les canaux de transmissions vers un traitement</li>
+            <li>Un moteur (engine)qui pour chaque sservice traîte les requêtes et renvoie les réponses</li>
+            <li>Des hôtes (Hosts) qui relient une adresse réseau avec le serveur</li>
+            <li>Des connecteurs interprétant un canal et protocole de communication réseau à disposition des clients, typiquement HTTP</li>
+            <li>Des contextes, qui sont les applications Web.</li>
+        </ul>
+        
+      <p>Tomcat est souvent utilisé avec un autre serveur Web, souvent Apache. Ce dernier s'occupe des pages web traditionnelles (html, php, ...) et délègue au premier les pages relavant d'une application web Java (JSP, Servlet).</p>
+      <p>Dans une installation typique de Tomcat, on retrouve les répertoires suivants:</p>
+      
+      <ul>
+      	<li><strong><em>/bin</em></strong>: Contient les scripts .sh (analogue à .bat sur Windows), notamment celui du lancement de Catalina.</li>
+      	<li><em><strong>/conf</strong></em>: Contient des fichiers de configuration et DTDs. Le fichier le plus important est server.xml, il s'agit du fichier principal de configuration pour le conteneur.</li>
+      	<li><em><strong>/lib</strong></em>: Contient les bibliothèques (.jar)</li>
+      	<li><em><strong>/logs</strong></em>: Contient par défaut les logs des applications en cours d'exécution, notamment catalina.out</li>
+      	<li><em><strong>/webapps</strong></em>: Contient les applications Web (fichiers .war)</li>
+      	<li><em><strong>/work</strong></em>: fichiers et répertoires temporaires (le cache).</li>
+      </ul>
 
     <h2>Introduction: le Quoi</h2>
     <p>Tomcat Realm est une interface permettant de gérer l'authentification du coté application, à travers une connection entre Catalina et une base de données contenant les informations utilisateurs, mots de passe, ...</p>
