@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <html>
-
+<head>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-35ul{font-weight:bold;background-color:#f8ff00;text-align:center;vertical-align:top}
+</style>
+</head>
 <body>
     <h1>Tomcat Realm pour sécuriser les accès application</h1>
 
     <h2> Contenu: </h2>
     <ol>
         <li>Introduction Très Simplifiée à Tomcat et Terminologie</li>
-        <li>CATALINA_HOME et CATALINA_BASE</li>
+		<li>CATALINA_BASE: Pourquoi et son contenu</li>
         <li>Tomcat Realm</li>
         <ol>
-            <li>Introduction: le Quoi</li>
+          <li>Introduction: le Quoi</li>
           <li>Types d'implémentations</li>
             <ol>
                 <li>JDBCRealm</li>
@@ -24,7 +32,7 @@
                 <li>LockOutRealm</li>
             </ol>
           <li>Fonctionnalités Communes</li>
-            <li>Attributs</li>
+          <li>Attributs</li>
           <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
         </ol>
     </ol>
@@ -55,11 +63,80 @@
       	<li><em><strong>/logs</strong></em>: Contient par défaut les logs des applications en cours d'exécution, notamment catalina.out</li>
       	<li><em><strong>/webapps</strong></em>: Contient les applications Web (fichiers .war)</li>
       	<li><em><strong>/work</strong></em>: fichiers et répertoires temporaires (le cache).</li>
-      </ul>
-
-    <h2>Introduction: le Quoi</h2>
+   	  </ul>
+	  
+      <h2>2. CATALINA_BASE: Pourquoi et son contenu</h2>
+	  <p>Il existe deux répertoires fréquemment utilisés:</p>
+		<ul>
+        <li><b>CATALINA_HOME</b>: le répertoire racine de l'installation de Tomcat</li>
+        <li><strong>CATALINA_BASE</strong>: La répertoire racine d'une configuration d'execution spécifique à une instance Tomcat. Utilisée quand il existe plusieurs instances sur la même machine</li>
+        </ul>
+	<p>Le premier contient notamment les fichiers .jar et les binaires. Le dernier contient des fichiers de configurations, les logs, les applications déployées et toute autre necessité pour l'execution</p>
+	
+	<p>Par défaut, <b>CATALINA_HOME</b> et <b>CATALINA_BASE</b> réfèrent au même répertoire.
+	   Quand plusieurs instances Tomcat sont présentes sur la même machine, il faut définir <b>CATALINA_BASE</b>. Cela permet de:
+	   
+	   <ul>
+		<li>Gérer plus facilement les mises à jour de Tomcat. En effet, toutes les instances relatives au même <b>CATALINA_HOME</b>
+		partagent les mêmes fichiers .jar et binaires. La mise à jour de <b>CATALINA_HOME</b> engendre celle de toutes ces instances</li>
+		<li>Eviter la duplication des fichiers .jar</li>
+		<li>Partage de certain paramètres, par exemple le script setenv.	</li>
+	   </ul>
+    <p>Avant toute chose, il est recommandé de créer l'arborescence des répertoires utilisés par <b>CATALINA_BASE</b>. Certains répertoires sont créés automatiquement. Le cas échéant (par exemple dû à des problèmes de permissions d'accès)
+	Tomcat ne démarrera pas ou ne fonctionnera pas proprement.</p>
+	
+	<p>La composition de cette arborescence est résumée dans le tableau ci-dessous:</p>
+	<table class="tg">
+  <tr>
+    <th class="tg-35ul">Répertoire<br></th>
+    <th class="tg-35ul">Créé Automatiquement?</th>
+    <th class="tg-35ul">Ordre de Recherche<br></th>
+    <th class="tg-35ul">Commentaires</th>
+  </tr>
+  <tr>
+    <td class="tg-baqh">bin</td>
+    <td class="tg-baqh">Non</td>
+    <td class="tg-baqh">CATALINA_BASE, CATALINA_HOME sinon</td>
+    <td class="tg-baqh">Contient les shell, ainsi que <span style="font-style:italic">tomcat-juli.jar</span></td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">lib</td>
+    <td class="tg-baqh">Oui, si l'application dépend sur des librairies externes</td>
+    <td class="tg-baqh">CATALINA_BASE puis CATALINA_HOME</td>
+    <td class="tg-baqh">Contient les ressources à ajouter au classpath</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">logs</td>
+    <td class="tg-baqh">Oui</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">Contient les logs de l'application</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">temp</td>
+    <td class="tg-baqh">Oui</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">Utilisé par le JVM pour les fichiers temporaires<br></td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">webapps</td>
+    <td class="tg-baqh">Oui, si l'on souhaite déployer des applications</td>
+    <td class="tg-baqh">CATALINA_BASE seulement</td>
+    <td class="tg-baqh">Répertoire pour les applications Web chargées automatiquement<br></td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">work</td>
+    <td class="tg-baqh">Oui</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">Contient les répertoires temporaires pour les applications</td>
+  </tr>
+</table>
+	
+	<p>Il n'est recommandé de modifier le fichier <em>tomcat-juli.jar</em> que lorsqu'on souhaite implémenter une autre manière de gestion des logs.</p>
+	<p>Il est aussi recommandé de copier <strong>CATALINA_HOME</strong>/conf dans <strong>CATALINA_BASE</strong>/conf, car la recherche de configuration n'est effectuée que dans <strong>CATALINA_BASE</strong></p>
+	<h2>Introduction: le Quoi</h2>
     <p>Tomcat Realm est une interface permettant de gérer l'authentification du coté application, à travers une connection entre Catalina et une base de données contenant les informations utilisateurs, mots de passe, ...</p>
-
+	
+	
     <p>En d'autres termes, c'est une sorte de base de données des utilisateurs et mots de passe permettant d'identifier les utilisateurs ayant accès à une application Web (ou plusieurs), ainsi qu'une énumeration des roles associés à ces utilisateurs.
         <br> Le système de roles est analogue aux <i>groupes</i> dans les systèmes Unix, car l'accès est donné pour tous les utilisateurs d'un role donné. Un utilisateur peut posséder plusieurs roles.</p>
     <p>La specification <em>Servlet</em> decrit un mécanisme portable permettant aux applications de &quot;déclarer&quot; leur options de sécurité. Cependant, aucune IPA ne definit l'interface entre le conteneur <em>Servlet</em> et l'utilisateur associé.
