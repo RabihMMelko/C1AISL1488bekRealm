@@ -17,7 +17,7 @@
     <ol>
         <li>Introduction Très Simplifiée à Tomcat et Terminologie</li>
 		<li>CATALINA_BASE: Pourquoi et son contenu</li>
-        <li>Tomcat Realm</li>
+        <li>Tomcat Realm pour la Sécurité des Accès aux Applications</li>
         <ol>
           <li>Introduction: le Quoi</li>
           <li>Types d'implémentations</li>
@@ -132,8 +132,16 @@
 </table>
 	
 	<p>Il n'est recommandé de modifier le fichier <em>tomcat-juli.jar</em> que lorsqu'on souhaite implémenter une autre manière de gestion des logs.</p>
-	<p>Il est aussi recommandé de copier <strong>CATALINA_HOME</strong>/conf dans <strong>CATALINA_BASE</strong>/conf, car la recherche de configuration n'est effectuée que dans <strong>CATALINA_BASE</strong></p>
-	<h2>Introduction: le Quoi</h2>
+	<p>Il est aussi recommandé de copier <strong>CATALINA_HOME</strong>/conf dans <strong>CATALINA_BASE</strong>/conf, car la recherche de configuration n'est effectuée que dans <strong>CATALINA_BASE</strong>, ce qui posera des soucis.</p>
+	<p>Au minimum, <strong>CATALINA_BASE</strong> doit contenir les fichiers <em>server.xml</em> et <em>web.xml</em> sous le fichier <em>conf</em></p>
+	<p><strong>CATALINA_BASE</strong> est une variable d'environnement modifiable avant l'execution du script de lancement de Tomcat.</p>
+	<ul>
+    <li> Sur Unix: 
+      <em>CATALINA_BASE=/tmp/tomcat_base1 bin/catalina.sh start</em>    
+    <li>Sur Windows: <em>CATALINA_BASE=C:\tomcat_base1 bin/catalina.bat start</em>
+    </ul>
+	<h2>3. Tomcat Realm pour la sécurité des accès aux applications</h2>
+	<h3>3.1 Introduction: le Quoi</h3>
     <p>Tomcat Realm est une interface permettant de gérer l'authentification du coté application, à travers une connection entre Catalina et une base de données contenant les informations utilisateurs, mots de passe, ...</p>
 	
 	
@@ -141,7 +149,7 @@
         <br> Le système de roles est analogue aux <i>groupes</i> dans les systèmes Unix, car l'accès est donné pour tous les utilisateurs d'un role donné. Un utilisateur peut posséder plusieurs roles.</p>
     <p>La specification <em>Servlet</em> decrit un mécanisme portable permettant aux applications de &quot;déclarer&quot; leur options de sécurité. Cependant, aucune IPA ne definit l'interface entre le conteneur <em>Servlet</em> et l'utilisateur associé.
         <br> Comme il est désirable de connecter la <em>Servlet</em> à une base de données pour l'authentification (ou tout autre mécanisme existant sur l'environnement), Tomcat definit une interface Java <strong>org.apache.catalina.Realm</strong>, pouvant être implémentée par des composants &quot;plug in&quot; pour établir cette connection</p>
-    <h2> Types de Plugins </h2>
+    <h3> 3.2 Types de Plugins </h3>
     <p>Six plug-ins standards sont disponibles:</p>
     <p>
         <ul>
@@ -214,7 +222,16 @@
         <p>Ce mode présente plusieurs inconvénients:</p>
         <p> En premier lieu, il faut configurer <strong>connectionName </strong>et <strong>connectionPassword</strong> afin de permettre au realm de lire les mots de passe des utilisateurs dans le répertoire. Ceci est indésirable du point de vue sécurité. En effet, plusieurs implémentations ne permettent même pas au gestionnaire des répoertoires de lire ces mots de passe.<br>
         </p>
-        <p>De plus, il reviendra au Realm de faire les <em>digest</em> des mots de passe. Ceci n'est convenable car le Realm a des fois besoin d'accéder aux mots de passe</p>
+        <p>De plus, il reviendra au Realm de faire les <em>digest</em> des mots de passe. Ceci n'est convenable car le Realm a des fois besoin d'accéder aux mots de passe.</p>
+        <p><strong>Affectation de roles à l'utilisateur</strong></p>
+        <p>Il existe deux approches pour la représentation des roles dans le répertoire:</p>
+        <ul>
+        <li><strong>Roles 
+        comme entrées répertoires explicites<br>
+        <br>
+        </strong>Une entrée role est habituellement une entrée LDAP composée de deux attributs: une définissant le nom du role et une autre pour les utilisateurs dans ce role. Les attribus suivants<strong><br>
+        </strong>
+        </ul>
         </li>
         </ul>
     </p>
