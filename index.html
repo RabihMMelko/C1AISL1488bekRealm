@@ -1,26 +1,62 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <html>
+
 <head>
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-.tg .tg-baqh{text-align:center;vertical-align:top}
-.tg .tg-35ul{font-weight:bold;background-color:#f8ff00;text-align:center;vertical-align:top}
-</style>
+    <style type="text/css">
+        .tg {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        
+        .tg td {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            padding: 10px 5px;
+            border-style: solid;
+            border-width: 1px;
+            overflow: hidden;
+            word-break: normal;
+            border-color: black;
+        }
+        
+        .tg th {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            padding: 10px 5px;
+            border-style: solid;
+            border-width: 1px;
+            overflow: hidden;
+            word-break: normal;
+            border-color: black;
+        }
+        
+        .tg .tg-baqh {
+            text-align: center;
+            vertical-align: top
+        }
+        
+        .tg .tg-35ul {
+            font-weight: bold;
+            background-color: #f8ff00;
+            text-align: center;
+            vertical-align: top
+        }
+    </style>
 </head>
+
 <body>
     <h1>Tomcat Realm pour sécuriser les accès application</h1>
 
     <h2> Contenu: </h2>
     <ol>
         <li>Introduction Très Simplifiée à Tomcat et Terminologie</li>
-		<li>CATALINA_BASE: Pourquoi et son contenu</li>
+        <li>CATALINA_BASE: Pourquoi et son contenu</li>
         <li>Tomcat Realm pour la Sécurité des Accès aux Applications</li>
         <ol>
-          <li>Introduction: le Quoi</li>
-          <li>Types d'implémentations</li>
+            <li>Introduction: le Quoi</li>
+            <li>Types d'implémentations</li>
             <ol>
                 <li>JDBCRealm</li>
                 <li>DataSourceRealm</li>
@@ -31,241 +67,365 @@
                 <li>CombinedRealm</li>
                 <li>LockOutRealm</li>
             </ol>
-          <li>Fonctionnalités Communes</li>
-          <li>Attributs</li>
-          <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
+            <li>Fonctionnalités Communes</li>
+            <li>Attributs</li>
+            <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
         </ol>
     </ol>
-    
+
     <h2>1. Introduction Très Simplifiée à Tomcat et Terminologie</h2>
-    
+
     <p>Apache Tomcat est un conteneur web <em>open source</em> de servlets et JSP. Il implémente les spécifications des servlets et des JSP, est paramétrable à travers XML, inclut des outils de configuration et de gestion, ainsi qu'un serveur HTTP.</p>
-    
+
     <p>Ecrit en Java, il peut s'exécuter via JVM sur tout système d'exploitation. La gestion des servlets est effectuée par un compilateur Jasper, qui parse les fichiers JSP afain de les compiler en code Java en tant que servlets. Un des avantages de Japser est la capcité à recompiler automatiquement les fichiers JSP modifiés.</p>
-    
+
     <p>L'architecture du logiciel est définie comme suit:</p>
-<ul>
-        	<li>Un serveur en cours d'exécution.</li>
-            <li>Des services intermédiaires reliant les canaux de transmissions vers un traitement</li>
-            <li>Un moteur (engine)qui pour chaque sservice traîte les requêtes et renvoie les réponses</li>
-            <li>Des hôtes (Hosts) qui relient une adresse réseau avec le serveur</li>
-            <li>Des connecteurs interprétant un canal et protocole de communication réseau à disposition des clients, typiquement HTTP</li>
-            <li>Des contextes, qui sont les applications Web.</li>
-        </ul>
-        
-      <p>Tomcat est souvent utilisé avec un autre serveur Web, souvent Apache. Ce dernier s'occupe des pages web traditionnelles (html, php, ...) et délègue au premier les pages relavant d'une application web Java (JSP, Servlet).</p>
-      <p>Dans une installation typique de Tomcat, on retrouve les répertoires suivants:</p>
-      
-      <ul>
-      	<li><strong><em>/bin</em></strong>: Contient les scripts .sh (analogue à .bat sur Windows), notamment celui du lancement de Catalina.</li>
-      	<li><em><strong>/conf</strong></em>: Contient des fichiers de configuration et DTDs. Le fichier le plus important est server.xml, il s'agit du fichier principal de configuration pour le conteneur.</li>
-      	<li><em><strong>/lib</strong></em>: Contient les bibliothèques (.jar)</li>
-      	<li><em><strong>/logs</strong></em>: Contient par défaut les logs des applications en cours d'exécution, notamment catalina.out</li>
-      	<li><em><strong>/webapps</strong></em>: Contient les applications Web (fichiers .war)</li>
-      	<li><em><strong>/work</strong></em>: fichiers et répertoires temporaires (le cache).</li>
-   	  </ul>
-	  
-      <h2>2. CATALINA_BASE: Pourquoi et son contenu</h2>
-	  <p>Il existe deux répertoires fréquemment utilisés:</p>
-		<ul>
+    <ul>
+        <li>Un serveur en cours d'exécution.</li>
+        <li>Des services intermédiaires reliant les canaux de transmissions vers un traitement</li>
+        <li>Un moteur (engine)qui pour chaque sservice traîte les requêtes et renvoie les réponses</li>
+        <li>Des hôtes (Hosts) qui relient une adresse réseau avec le serveur</li>
+        <li>Des connecteurs interprétant un canal et protocole de communication réseau à disposition des clients, typiquement HTTP</li>
+        <li>Des contextes, qui sont les applications Web.</li>
+    </ul>
+
+    <p>Tomcat est souvent utilisé avec un autre serveur Web, souvent Apache. Ce dernier s'occupe des pages web traditionnelles (html, php, ...) et délègue au premier les pages relavant d'une application web Java (JSP, Servlet).</p>
+    <p>Dans une installation typique de Tomcat, on retrouve les répertoires suivants:</p>
+
+    <ul>
+        <li><strong><em>/bin</em></strong>: Contient les scripts .sh (analogue à .bat sur Windows), notamment celui du lancement de Catalina.</li>
+        <li><em><strong>/conf</strong></em>: Contient des fichiers de configuration et DTDs. Le fichier le plus important est server.xml, il s'agit du fichier principal de configuration pour le conteneur.</li>
+        <li><em><strong>/lib</strong></em>: Contient les bibliothèques (.jar)</li>
+        <li><em><strong>/logs</strong></em>: Contient par défaut les logs des applications en cours d'exécution, notamment catalina.out</li>
+        <li><em><strong>/webapps</strong></em>: Contient les applications Web (fichiers .war)</li>
+        <li><em><strong>/work</strong></em>: fichiers et répertoires temporaires (le cache).</li>
+    </ul>
+
+    <h2>2. CATALINA_BASE: Pourquoi et son contenu</h2>
+    <p>Il existe deux répertoires fréquemment utilisés:</p>
+    <ul>
         <li><b>CATALINA_HOME</b>: le répertoire racine de l'installation de Tomcat</li>
         <li><strong>CATALINA_BASE</strong>: La répertoire racine d'une configuration d'execution spécifique à une instance Tomcat. Utilisée quand il existe plusieurs instances sur la même machine</li>
-        </ul>
-	<p>Le premier contient notamment les fichiers .jar et les binaires. Le dernier contient des fichiers de configurations, les logs, les applications déployées et toute autre necessité pour l'execution</p>
-	
-	<p>Par défaut, <b>CATALINA_HOME</b> et <b>CATALINA_BASE</b> réfèrent au même répertoire.
-	   Quand plusieurs instances Tomcat sont présentes sur la même machine, il faut définir <b>CATALINA_BASE</b>. Cela permet de:
-	   
-	   <ul>
-		<li>Gérer plus facilement les mises à jour de Tomcat. En effet, toutes les instances relatives au même <b>CATALINA_HOME</b>
-		partagent les mêmes fichiers .jar et binaires. La mise à jour de <b>CATALINA_HOME</b> engendre celle de toutes ces instances</li>
-		<li>Eviter la duplication des fichiers .jar</li>
-		<li>Partage de certain paramètres, par exemple le script setenv.	</li>
-	   </ul>
-    <p>Avant toute chose, il est recommandé de créer l'arborescence des répertoires utilisés par <b>CATALINA_BASE</b>. Certains répertoires sont créés automatiquement. Le cas échéant (par exemple dû à des problèmes de permissions d'accès)
-	Tomcat ne démarrera pas ou ne fonctionnera pas proprement.</p>
-	
-	<p>La composition de cette arborescence est résumée dans le tableau ci-dessous:</p>
-	<table class="tg">
-  <tr>
-    <th class="tg-35ul">Répertoire<br></th>
-    <th class="tg-35ul">Créé Automatiquement?</th>
-    <th class="tg-35ul">Ordre de Recherche<br></th>
-    <th class="tg-35ul">Commentaires</th>
-  </tr>
-  <tr>
-    <td class="tg-baqh">bin</td>
-    <td class="tg-baqh">Non</td>
-    <td class="tg-baqh">CATALINA_BASE, CATALINA_HOME sinon</td>
-    <td class="tg-baqh">Contient les shell, ainsi que <span style="font-style:italic">tomcat-juli.jar</span></td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">lib</td>
-    <td class="tg-baqh">Oui, si l'application dépend sur des librairies externes</td>
-    <td class="tg-baqh">CATALINA_BASE puis CATALINA_HOME</td>
-    <td class="tg-baqh">Contient les ressources à ajouter au classpath</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">logs</td>
-    <td class="tg-baqh">Oui</td>
-    <td class="tg-baqh">-</td>
-    <td class="tg-baqh">Contient les logs de l'application</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">temp</td>
-    <td class="tg-baqh">Oui</td>
-    <td class="tg-baqh">-</td>
-    <td class="tg-baqh">Utilisé par le JVM pour les fichiers temporaires<br></td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">webapps</td>
-    <td class="tg-baqh">Oui, si l'on souhaite déployer des applications</td>
-    <td class="tg-baqh">CATALINA_BASE seulement</td>
-    <td class="tg-baqh">Répertoire pour les applications Web chargées automatiquement<br></td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">work</td>
-    <td class="tg-baqh">Oui</td>
-    <td class="tg-baqh">-</td>
-    <td class="tg-baqh">Contient les répertoires temporaires pour les applications</td>
-  </tr>
-</table>
-	
-	<p>Il n'est recommandé de modifier le fichier <em>tomcat-juli.jar</em> que lorsqu'on souhaite implémenter une autre manière de gestion des logs.</p>
-	<p>Il est aussi recommandé de copier <strong>CATALINA_HOME</strong>/conf dans <strong>CATALINA_BASE</strong>/conf, car la recherche de configuration n'est effectuée que dans <strong>CATALINA_BASE</strong>, ce qui posera des soucis.</p>
-	<p>Au minimum, <strong>CATALINA_BASE</strong> doit contenir les fichiers <em>server.xml</em> et <em>web.xml</em> sous le fichier <em>conf</em></p>
-	<p><strong>CATALINA_BASE</strong> est une variable d'environnement modifiable avant l'execution du script de lancement de Tomcat.</p>
-	<ul>
-    <li> Sur Unix: 
-      <em>CATALINA_BASE=/tmp/tomcat_base1 bin/catalina.sh start</em>    
-    <li>Sur Windows: <em>CATALINA_BASE=C:\tomcat_base1 bin/catalina.bat start</em>
     </ul>
-	<h2>3. Tomcat Realm pour la sécurité des accès aux applications</h2>
-	<h3>3.1 Introduction: le Quoi</h3>
-    <p>Tomcat Realm est une interface permettant de gérer l'authentification du coté application, à travers une connection entre Catalina et une base de données contenant les informations utilisateurs, mots de passe, ...</p>
-	
-	
-    <p>En d'autres termes, c'est une sorte de base de données des utilisateurs et mots de passe permettant d'identifier les utilisateurs ayant accès à une application Web (ou plusieurs), ainsi qu'une énumeration des roles associés à ces utilisateurs.
-        <br> Le système de roles est analogue aux <i>groupes</i> dans les systèmes Unix, car l'accès est donné pour tous les utilisateurs d'un role donné. Un utilisateur peut posséder plusieurs roles.</p>
-    <p>La specification <em>Servlet</em> decrit un mécanisme portable permettant aux applications de &quot;déclarer&quot; leur options de sécurité. Cependant, aucune IPA ne definit l'interface entre le conteneur <em>Servlet</em> et l'utilisateur associé.
-        <br> Comme il est désirable de connecter la <em>Servlet</em> à une base de données pour l'authentification (ou tout autre mécanisme existant sur l'environnement), Tomcat definit une interface Java <strong>org.apache.catalina.Realm</strong>, pouvant être implémentée par des composants &quot;plug in&quot; pour établir cette connection</p>
-    <h3> 3.2 Types de Plugins </h3>
-    <p>Six plug-ins standards sont disponibles:</p>
-    <p>
+    <p>Le premier contient notamment les fichiers .jar et les binaires. Le dernier contient des fichiers de configurations, les logs, les applications déployées et toute autre necessité pour l'execution</p>
+
+    <p>Par défaut, <b>CATALINA_HOME</b> et <b>CATALINA_BASE</b> réfèrent au même répertoire. Quand plusieurs instances Tomcat sont présentes sur la même machine, il faut définir <b>CATALINA_BASE</b>. Cela permet de:
+
         <ul>
-            <li><u><b>JDBCRealm</b></u>:
-                <p> Dérivé de l'interface Realm de Tomcat, la recherche des utilisateurs, roles et mots de passe se fait lors d'une connection entre Catalina et une BD relationnelle, en utilisant un driver JDBC (tel MySQL Connector).</p>
-                <p>Les modifications sur la BD sont immédiates, permettant de maintenir des authentifications actualisées.</p>
-                <p>Quand un utilisateur accède pourla première fois à une ressource protégée, Tomcat appelle la méthode authenticate(), afin que toute actualisation soit immédiatement reflétée. L'authentification de cet utilisateur sera mise en cache sur la durée de la session. Mais toute modification ne sera reflétée que lors d'une nouvelle session.</p>
-                <p>La flexibilité de configuration permet de l'adapter en fonction du modèle sur la base de donnée, tout en respectant les critères suivants:</p>
-                <br>
-                <ul>
-                    <li>Existence d'une table "Utilisateurs", contenant les utilisateurs reconnaissables par le <i>Realm</i>.</li>
-                    <li>Cette table contient au moins deux attributs: Une pour les noms utilisateurs et une pour les mots de passe. A noter que ce dernier peut être stocké en clair ou hâché.</li>
-                    <li>
-                        Existence d'une table "Roles" contenant les roles affectés par utilisateur. Un utilisateur peut avoir 0, 1 ou plusieurs roles.</li>
-                    <li>Deux colonnes au minimum sont requises pour cette table: Nom utilisateur (comme figurant dans la table "Utilisateurs") et Nom de Role.</li>
-                </ul>
-            </li>
-    </p>
-    </li>
-    <p>Pour configurer Tomcat afin qu'il utilise JDBCRealm, il faut:</p>
-    <ol>
-        <li>Créer les tables dans la base de données conformement à la spécification ci-dessus.</li>
-        <li>Configurer un utilisateur (et son mot de passe) utilisé par Tomcat, avec permission de lecture sur les deux tables précédentes (Tomcat ne modifiera pas ces tables)</li>
-        <li>Placer une copie du drier JDBC utilisé dans<strong> $CATALINA_HOME/lib</strong>. Seulement les fichiers JAR seront reconnus.</li>
-        <li>Créer l'élément <em>&lt;Realm&gt; </em>dans <strong>$CATALINA_BASE/conf/server.xml</strong></li>
-        <li>Redémarrer Tomcat.</li>
-    </ol>
-    <p>Un exemple d'objet Realm pour une base de données MySQL nommée &quot;authority&quot;, avec un utilisateur dbuser/dbpass ressemblerait à:</p>
-    <pre><code>
+            <li>Gérer plus facilement les mises à jour de Tomcat. En effet, toutes les instances relatives au même <b>CATALINA_HOME</b> partagent les mêmes fichiers .jar et binaires. La mise à jour de <b>CATALINA_HOME</b> engendre celle de toutes ces instances</li>
+            <li>Eviter la duplication des fichiers .jar</li>
+            <li>Partage de certain paramètres, par exemple le script setenv. </li>
+        </ul>
+        <p>Avant toute chose, il est recommandé de créer l'arborescence des répertoires utilisés par <b>CATALINA_BASE</b>. Certains répertoires sont créés automatiquement. Le cas échéant (par exemple dû à des problèmes de permissions d'accès) Tomcat ne démarrera pas ou ne fonctionnera pas proprement.</p>
+
+        <p>La composition de cette arborescence est résumée dans le tableau ci-dessous:</p>
+        <table class="tg">
+            <tr>
+                <th class="tg-35ul">Répertoire
+                    <br>
+                </th>
+                <th class="tg-35ul">Créé Automatiquement?</th>
+                <th class="tg-35ul">Ordre de Recherche
+                    <br>
+                </th>
+                <th class="tg-35ul">Commentaires</th>
+            </tr>
+            <tr>
+                <td class="tg-baqh">bin</td>
+                <td class="tg-baqh">Non</td>
+                <td class="tg-baqh">CATALINA_BASE, CATALINA_HOME sinon</td>
+                <td class="tg-baqh">Contient les shell, ainsi que <span style="font-style:italic">tomcat-juli.jar</span></td>
+            </tr>
+            <tr>
+                <td class="tg-baqh">lib</td>
+                <td class="tg-baqh">Oui, si l'application dépend sur des librairies externes</td>
+                <td class="tg-baqh">CATALINA_BASE puis CATALINA_HOME</td>
+                <td class="tg-baqh">Contient les ressources à ajouter au classpath</td>
+            </tr>
+            <tr>
+                <td class="tg-baqh">logs</td>
+                <td class="tg-baqh">Oui</td>
+                <td class="tg-baqh">-</td>
+                <td class="tg-baqh">Contient les logs de l'application</td>
+            </tr>
+            <tr>
+                <td class="tg-baqh">temp</td>
+                <td class="tg-baqh">Oui</td>
+                <td class="tg-baqh">-</td>
+                <td class="tg-baqh">Utilisé par le JVM pour les fichiers temporaires
+                    <br>
+                </td>
+            </tr>
+            <tr>
+                <td class="tg-baqh">webapps</td>
+                <td class="tg-baqh">Oui, si l'on souhaite déployer des applications</td>
+                <td class="tg-baqh">CATALINA_BASE seulement</td>
+                <td class="tg-baqh">Répertoire pour les applications Web chargées automatiquement
+                    <br>
+                </td>
+            </tr>
+            <tr>
+                <td class="tg-baqh">work</td>
+                <td class="tg-baqh">Oui</td>
+                <td class="tg-baqh">-</td>
+                <td class="tg-baqh">Contient les répertoires temporaires pour les applications</td>
+            </tr>
+        </table>
+
+        <p>Il n'est recommandé de modifier le fichier <em>tomcat-juli.jar</em> que lorsqu'on souhaite implémenter une autre manière de gestion des logs.</p>
+        <p>Il est aussi recommandé de copier <strong>CATALINA_HOME</strong>/conf dans <strong>CATALINA_BASE</strong>/conf, car la recherche de configuration n'est effectuée que dans <strong>CATALINA_BASE</strong>, ce qui posera des soucis.</p>
+        <p>Au minimum, <strong>CATALINA_BASE</strong> doit contenir les fichiers <em>server.xml</em> et <em>web.xml</em> sous le fichier <em>conf</em></p>
+        <p><strong>CATALINA_BASE</strong> est une variable d'environnement modifiable avant l'execution du script de lancement de Tomcat.</p>
+        <ul>
+            <li> Sur Unix:
+                <em>CATALINA_BASE=/tmp/tomcat_base1 bin/catalina.sh start</em>
+                <li>Sur Windows: <em>CATALINA_BASE=C:\tomcat_base1 bin/catalina.bat start</em>
+        </ul>
+        <h2>3. Tomcat Realm pour la sécurité des accès aux applications</h2>
+        <h3>3.1 Introduction: le Quoi</h3>
+        <p>Tomcat Realm est une interface permettant de gérer l'authentification du coté application, à travers une connection entre Catalina et une base de données contenant les informations utilisateurs, mots de passe, ...</p>
+
+        <p>En d'autres termes, c'est une sorte de base de données des utilisateurs et mots de passe permettant d'identifier les utilisateurs ayant accès à une application Web (ou plusieurs), ainsi qu'une énumeration des roles associés à ces utilisateurs.
+            <br> Le système de roles est analogue aux <i>groupes</i> dans les systèmes Unix, car l'accès est donné pour tous les utilisateurs d'un role donné. Un utilisateur peut posséder plusieurs roles.</p>
+        <p>La specification <em>Servlet</em> decrit un mécanisme portable permettant aux applications de &quot;déclarer&quot; leur options de sécurité. Cependant, aucune IPA ne definit l'interface entre le conteneur <em>Servlet</em> et l'utilisateur associé.
+            <br> Comme il est désirable de connecter la <em>Servlet</em> à une base de données pour l'authentification (ou tout autre mécanisme existant sur l'environnement), Tomcat definit une interface Java <strong>org.apache.catalina.Realm</strong>, pouvant être implémentée par des composants &quot;plug in&quot; pour établir cette connection</p>
+        <h3> 3.2 Types de Plugins </h3>
+        <p>Six plug-ins standards sont disponibles:</p>
+        <p>
+            <ul>
+                <li><u><b>JDBCRealm</b></u>:
+                    <p> Dérivé de l'interface Realm de Tomcat, la recherche des utilisateurs, roles et mots de passe se fait lors d'une connection entre Catalina et une BD relationnelle, en utilisant un driver JDBC (tel MySQL Connector).</p>
+                    <p>Les modifications sur la BD sont immédiates, permettant de maintenir des authentifications actualisées.</p>
+                    <p>Quand un utilisateur accède pourla première fois à une ressource protégée, Tomcat appelle la méthode authenticate(), afin que toute actualisation soit immédiatement reflétée. L'authentification de cet utilisateur sera mise en cache sur la durée de la session. Mais toute modification ne sera reflétée que lors d'une nouvelle session.</p>
+                    <p>La flexibilité de configuration permet de l'adapter en fonction du modèle sur la base de donnée, tout en respectant les critères suivants:</p>
+                    <br>
+                    <ul>
+                        <li>Existence d'une table "Utilisateurs", contenant les utilisateurs reconnaissables par le <i>Realm</i>.</li>
+                        <li>Cette table contient au moins deux attributs: Une pour les noms utilisateurs et une pour les mots de passe. A noter que ce dernier peut être stocké en clair ou hâché.</li>
+                        <li>
+                            Existence d'une table "Roles" contenant les roles affectés par utilisateur. Un utilisateur peut avoir 0, 1 ou plusieurs roles.</li>
+                        <li>Deux colonnes au minimum sont requises pour cette table: Nom utilisateur (comme figurant dans la table "Utilisateurs") et Nom de Role.</li>
+                    </ul>
+                </li>
+        </p>
+        </li>
+        <p>Pour configurer Tomcat afin qu'il utilise JDBCRealm, il faut:</p>
+        <ol>
+            <li>Créer les tables dans la base de données conformement à la spécification ci-dessus.</li>
+            <li>Configurer un utilisateur (et son mot de passe) utilisé par Tomcat, avec permission de lecture sur les deux tables précédentes (Tomcat ne modifiera pas ces tables)</li>
+            <li>Placer une copie du drier JDBC utilisé dans<strong> $CATALINA_HOME/lib</strong>. Seulement les fichiers JAR seront reconnus.</li>
+            <li>Créer l'élément <em>&lt;Realm&gt; </em>dans <strong>$CATALINA_BASE/conf/server.xml</strong></li>
+            <li>Redémarrer Tomcat.</li>
+        </ol>
+        <p>Un exemple d'objet Realm pour une base de données MySQL nommée &quot;authority&quot;, avec un utilisateur dbuser/dbpass ressemblerait à:</p>
+        <pre><code>
 &lt;Realm className="org.apache.catalina.realm.JDBCRealm"
       driverName="org.gjt.mm.mysql.Driver"
    connectionURL="jdbc:mysql://localhost/authority?user=dbuser&amp;amp;password=dbpass"
        userTable="users" userNameCol="user_name" userCredCol="user_pass"
    userRoleTable="user_roles" roleNameCol="role_name"/&gt;</code></pre>
-    <p>&nbsp;</p>
-    <li><u><b>DataSourceRealm</b></u>:
-        <p> Similaire à JDBCRealm dans l'appartenance à l'interface Realm de Tomcat et la configuration, la connection est effectuée via JNDI. Cette implémentation est avantageuse car JDBCRealm ne permet que de se connecter à une seule BD, soit une authentification à la fois. DataSourceRealm, quant à elle, permet plusieurs authentification simultanées par regroupement de connexions.</li>
-    </p>
-    <li><u><b>JNDIRealm</b></u>:
-        <p> Implémentation qui recherche les utilisateurs dans un serveur LDAP, accédé par un API JNDI.
-            <p><strong>Connection au repertoire:</strong>
-                <p>La connection est définie par l'attribut <em>connectionURL</em>. Il s'ait d'une URL au format définit par le fournisseur JNDI. Typiquement, c'est une URL LDAP spécifiant le nom du serveur auquel il faut se connecter, et -optionellement- le numero de port et le DN du contexte racine requis.
-                    <p>Dans le cas où il existerait plusieurs fournisseurs, une <em>alternateURL</em> peut être configurée. Si la connexion sur <em>connectionURL</em> échoue, une tentative de connexion sera envoyée sur <em>alternateURL</em>.
-                        <p>Lors d'une connexion ayant pour but de vérifier un utilisateur, le Realm s'identifie au serveur à travers les données dans les attributs <em>connectionName </em>et <em>connectionPassword</em>. Le cas échéant, la connection est anonyme.
-                            <p><strong>Selection de l'utilisateur:</strong>
-                                <p>Chaque utilisateur doit figurer dans le répertoire en tant qu'élément dans <em>DirContext</em> définit dans <em>connectionURL</em>. Cette entrée utilisateur doit inclure le nom utilisateur. </li>
-    </p>
-    <p>Le Realm recherche l'entrée utilisateur en utilisant les paramètres ci-dessous:</p>
-    
-    <ul>
-        <li><b>userBase</b>: Le répertoire racine pour la recherche, par défaut le contexte de plus haut niveau.</li>
-        <li><b>userSubtree</b>: Mettre à <strong>true</strong> pour effectuer la recherche dans les sous-niveaux.</li>
-        <li><b>userSearch</b>: Le pattern utilisé dans la recherche après substitution du nom utilisateur (&quot;{0}&quot; désigne la substitution).</li>
-    </ul>
-    <p><strong>Authentification de l'utilisateur:</strong></p>
-    <p>
-        <ul>
-        	<li><strong>Mode Bind</strong>
-            <p>
-            Par défaut, le realm 
-            authentifie l'utilisateur en liant au répertoire le DN pour cet utilisateur. Le succès de ce lien indique l'authentification de l'utilisateur.</p>
-            <p>Il est préférable de stocker le hachage du mot de passe utilisateur sur le serveur. Dans ce cas, le mot de passe (en clair) passé par l'utilisateur lors de l'authentification est haché par le répertoire avant la comparaison. l'attribut <em>digest</em> est donc ignoré car le Realm n'est pas concerné par le hachage.</p>
-        </li>
-        
-        <li>
-        <strong>Mode Comparaison
-        </strong>
-        <p>
-        Alternativement, le realm peut comparer directement le mot de passe stocké. Ce mode utilise l'attribut <strong>userPassword</strong>, ayant pour valeur le nom du répertoire contenant les données de l'utilisateur.</p>
-        <p>Ce mode présente plusieurs inconvénients:</p>
-        <p> En premier lieu, il faut configurer <strong>connectionName </strong>et <strong>connectionPassword</strong> afin de permettre au realm de lire les mots de passe des utilisateurs dans le répertoire. Ceci est indésirable du point de vue sécurité. En effet, plusieurs implémentations ne permettent même pas au gestionnaire des répoertoires de lire ces mots de passe.<br>
+        <p>&nbsp;</p>
+        <li><u><b>DataSourceRealm</b></u>:
+            <p> Similaire à JDBCRealm dans l'appartenance à l'interface Realm de Tomcat et la configuration, la connection est effectuée via JNDI. Cette implémentation est avantageuse car JDBCRealm ne permet que de se connecter à une seule BD, soit une authentification à la fois. DataSourceRealm, quant à elle, permet plusieurs authentification simultanées par regroupement de connexions.</li>
+        </p>--to add here
+        <p>&nbsp;</p>
+        <li><u><b>JNDIRealm</b></u>:
+            <p> Implémentation qui recherche les utilisateurs dans un serveur LDAP, accédé par un API JNDI.
+          <p><strong>Connection au repertoire:</strong>
+          <p>La connection est définie par l'attribut <em>connectionURL</em>. Il s'ait d'une URL au format définit par le fournisseur JNDI. Typiquement, c'est une URL LDAP spécifiant le nom du serveur auquel il faut se connecter, et -optionellement- le numero de port et le DN du contexte racine requis.
+          <p>Dans le cas où il existerait plusieurs fournisseurs, une <em>alternateURL</em> peut être configurée. Si la connexion sur <em>connectionURL</em> échoue, une tentative de connexion sera envoyée sur <em>alternateURL</em>.
+          <p>Lors d'une connexion ayant pour but de vérifier un utilisateur, le Realm s'identifie au serveur à travers les données dans les attributs <em>connectionName </em>et <em>connectionPassword</em>. Le cas échéant, la connection est anonyme.
+          <p><strong>Selection de l'utilisateur:</strong>
+          <p>Chaque utilisateur doit figurer dans le répertoire en tant qu'élément dans <em>DirContext</em> définit dans <em>connectionURL</em>. Cette entrée utilisateur doit inclure le nom utilisateur. </li>
         </p>
-        <p>De plus, il reviendra au Realm de faire les <em>digest</em> des mots de passe. Ceci n'est convenable car le Realm a des fois besoin d'accéder aux mots de passe.</p>
-        <p><strong>Affectation de roles à l'utilisateur</strong></p>
-        <p>Il existe deux approches pour la représentation des roles dans le répertoire:</p>
+        <p>Le Realm recherche l'entrée utilisateur en utilisant les paramètres ci-dessous:</p>
+
         <ul>
-        <li><strong>Roles 
+            <li><b>userBase</b>: Le répertoire racine pour la recherche, par défaut le contexte de plus haut niveau.</li>
+            <li><b>userSubtree</b>: Mettre à <strong>true</strong> pour effectuer la recherche dans les sous-niveaux.</li>
+            <li><b>userSearch</b>: Le pattern utilisé dans la recherche après substitution du nom utilisateur (&quot;{0}&quot; désigne la substitution).</li>
+        </ul>
+        <p><strong>Authentification de l'utilisateur:</strong></p>
+        <p>
+            <ul>
+                <li><strong>Mode Bind</strong>
+                    <p>
+                        Par défaut, le realm authentifie l'utilisateur en liant au répertoire le DN pour cet utilisateur. Le succès de ce lien indique l'authentification de l'utilisateur.</p>
+                    <p>Il est préférable de stocker le hachage du mot de passe utilisateur sur le serveur. Dans ce cas, le mot de passe (en clair) passé par l'utilisateur lors de l'authentification est haché par le répertoire avant la comparaison. l'attribut <em>digest</em> est donc ignoré car le Realm n'est pas concerné par le hachage.</p>
+                </li>
+
+                <li>
+                    <strong>Mode Comparaison
+        </strong>
+                    <p>
+                        Alternativement, le realm peut comparer directement le mot de passe stocké. Ce mode utilise l'attribut <strong>userPassword</strong>, ayant pour valeur le nom du répertoire contenant les données de l'utilisateur.</p>
+                    <p>Ce mode présente plusieurs inconvénients:</p>
+                    <p> En premier lieu, il faut configurer <strong>connectionName </strong>et <strong>connectionPassword</strong> afin de permettre au realm de lire les mots de passe des utilisateurs dans le répertoire. Ceci est indésirable du point de vue sécurité. En effet, plusieurs implémentations ne permettent même pas au gestionnaire des répoertoires de lire ces mots de passe.
+                        <br>
+                    </p>
+                    <p>De plus, il reviendra au Realm de faire les <em>digest</em> des mots de passe. Ceci n'est convenable car le Realm a des fois besoin d'accéder aux mots de passe.</p>
+                </li>
+            </ul>
+            <p><strong>Affectation de roles à l'utilisateur</strong></p>
+            <p>Il existe deux approches pour la représentation des roles dans le répertoire:</p>
+            <ul>
+                <li><strong>Roles 
         comme entrées répertoires explicites<br>
         <br>
-        </strong>Une entrée role est habituellement une entrée LDAP composée de deux attributs: une définissant le nom du role et une autre pour les utilisateurs dans ce role. Les attribus suivants<strong><br>
-        </strong>
-        </ul>
-        </li>
-        </ul>
-    </p>
-    
-    <li><u>UserDatabaseRealm</u> - L'information est stockée dans une ressource UserDatabase JNDI, typiquement dans un document XML (conf/tomcat-users.xml).</li>
-    <li><u>MemoryRealm</u> - Une collection est initialisée dans un objet mémoire à travers un fichier XML (conf/tomcat-users.xml)</li>
-    <li>
-        <u>
+        </strong>Une entrée role est habituellement une entrée LDAP composée de deux attributs: une définissant le nom du role et une autre pour les utilisateurs dans ce role. Les attributs suivants:
+                    <ul>
+                        <li><strong>roleBase</strong>: l'entrée de base pour la recherche de roles, par défaut celle de plus haut niveau.</li>
+                        <li><strong>roleSubtree</strong>: la portée de recherche. La valeur <em>true</em> signifie la recherche dans toute l'hiérarchie dérivant de <strong>roleBase</strong>. Par défaut (<em>false</em>) la recherche est efféctuée uniquement au plus haut niveau.</li>
+                        <li><strong>roleSearch</strong>: le filtre de recherche pour les roles LDAP. Inclus optionellement des patterns de remplacement: {0} pour le DN, {1} pour le nom utilisateur, {2} pour un attribut utilisateur, déclaré dans <strong>userRoleAttribute</strong>.</li>
+                        <li><strong>roleName</strong>: le nom du role</li>
+                        <li><strong>roleNested</strong>: mis à <em>true</em>, il permet d'avoir des roles imbriqués. Chaque nouveau nom de role et son DN seront fouillés récursivement pour les nouveaux roles.
+                            <br>
+                            <br>
+                        </li>
+                    </ul>
+              <li><strong>Roles comme attributs de l'entrée utilisateur<br>
+          <br>
+        </strong>Les noms de roles peuvent aussi figurer dans l'entrée utilisateur, à travers l'attribut <strong>userRoleName</strong>.</li>
+              </ul>
+            <p><strong>Example</strong></p>
+            <p>Supposons l'existence du fichier <em>slapd.conf</em> faisant partie du serveur de répertoires OpenLDAP et contenant entre autres les paramètres suivants:</p>
+            
+            <div style='background-color:#a2a2dc'>
+            database ldbm<br>
+            suffix dc="mycompany",dc="com"<br>
+            rootdn
+            &quot;cn=Manager,dc=mycompany,dc=com&quot;<br>
+            rootpw secret
+            </div>
+            
+            <p>&nbsp;</p>
+            <p>Supposons aussi que le erveur est constitué d'entrées utilisateur comme suit: </p>
+            <div style='background-color:#a2a2dc'>
+            #Entrée de plus haut niveau
+              <br>
+              dn: dc=mycompany,dc=com<br>
+              objectClass: dcObject<br>
+              dc:mycompany<br>
+              <br>
+              #Entrée pour contenir les individus. La recherche utilisateur est basée sur cette entrée<br>
+              <br>
+              dn: ou=people,dc=mycompany,dc=com<br>
+              objectClass: organizationalUnit<br>
+              ou: people<br>
+              <br>
+              #Entrée Utilisateur pour John Doe<br>
+              dn: uid=jdoe,ou=people,dc=mycompany,dc=com<br>
+              objectClass: inetOrgPerson<br>
+              uid: jdoe<br>
+              sn: doe<br>
+              cn: john doe<br>
+              mail: j.doe@mycompany.com<br>
+              userPassword: john<br>
+              <br>
+              #Entrée Utilisateur pour Maya Dawkins<br>
+              dn: uid=mdawkins, ou=people,dc=mycompany,dc=com<br>
+              objectClass: inetOrgPerson<br>
+              uid: mdawkins<br>
+              sn: dawkins<br>
+              cn: maya dawkins<br>
+              mail: m.dawkins@mycompany.com<br>
+              userPassword: maya<br>
+              <br>
+              #Entrée pour les groupes LDAP, pour la recherche des roles<br>
+              <br>
+              dn: ou=groups,dc=mycompany,dc=com<br>
+              objectClass: organizationalUnit<br>
+              ou: groups<br>
+              <br>
+              #Definition du role &quot;tomcat&quot;<br>
+              <br>
+              dn: cn=tomcat,ou=groups,dc=mycompany,dc=com<br>
+              objectClass: groupOfUniqueNames<br>
+              cn: tomcat<br>
+              uniqueMember: uid=jdoe,ou=people,dc=mycompany,dc=com<br>
+              uniqueMember: uid=mdawkins,ou=people,dc=mycompany,dc=com<br>
+              <br>
+              #Definition du role &quot;finance&quot;<br>
+              <br>
+              dn: cn=finance,ou=groups,dc=mycompany,dc=com<br>
+              objectClass: groupOfUniqueNames<br>
+              cn: finance<br>
+              uniqueMember: uid=mdawkins,ou=people,dc=mycompany,dc=com
+            </div>
+            <p><br>
+            Un exemple de Realm pour 
+            ce serveur
+            pour permettre aux utilisateurs de se connecter avec leur nom utilisateur serait: </p>
+            <p>&nbsp;</p>
+            <div style='background-color:#a2a2dc'>
+            <p>&lt;Realm className=&quot;org.apache.catalina.realm.JNDIRealm&quot;<br>
+              connectionURL=&quot;ldap://localhost:389&quot;<br>
+              userPattern=&quot;uid={0},ou=people,dc=mycompany,dc=com&quot;<br>
+              roleBase=&quot;ou=groups,dc=mycompany,dc=com&quot;<br>
+              roleName=&quot;cn&quot;<br>
+              roleSearch=&quot;(uniqueMember={0})&quot; /&gt;
+            </p>
+            </div>
+            <p><br>
+              Cette configuration permet au Realm de determiner le DN utilisateur en remplaçant le nom utilisateur dans userPattern, authentifiant l'utilisateur par son DN ainsi que déterminer ses roles.
+            </p>
+            <p>Supposons maintenant que l'utilisateur souhaite s'authentifier à travers son addresse mail, et que l'on souhaite utiliser un attribut de role pour les utilisateurs. Une entrée utilisateur devient donc:</p>
+            <div style='background-color:#a2a2dc'>dn: uid=mdawkins,ou=people,dc=mycompany,dc=com<br>
+              objectClass: inetOrgPerson<br>
+              uid: mdawkins<br>
+              sn: dawkins<br>
+              cn: maya dawkins<br>
+              mail: m.dawkins@mycompany.com<br>
+              memberOf: roleX<br>
+              memberOf: roleY<br>
+              userPassword: maya
+              <br>
+            </div>
+            <p>Le Realm sera ajusté de la manière suivante:</p>
+            <div style='background-color:#a2a2dc'>
+              <p>&lt;Realm className=&quot;org.apache.catalina.realm.JNDIRealm&quot;<br>
+                connectionURL=&quot;ldap://localhost:389&quot;<br>
+                userBase=&quot;ou=people,dc=mycompany,dc=com&quot;<br>
+                userSearch=&quot;(mail={0})&quot;<br>
+                userPassword=&quot;userPassword&quot;
+                <br>
+                userRoleName=&quot;memberOf&quot;<br>
+                .../&gt;</p>
+            </div>
+            </ul> 
+        </p>
+        <br>
+
+<li><u>UserDatabaseRealm</u> - L'information est stockée dans une ressource UserDatabase JNDI, typiquement dans un document XML (conf/tomcat-users.xml).</li>
+        <li><u>MemoryRealm</u> - Une collection est initialisée dans un objet mémoire à travers un fichier XML (conf/tomcat-users.xml)</li>
+        <li>
+            <u>
 JAASRealm
 </u> - L'accès à l'information est effectué à travers le framework <i> Java Authentication &amp; Authorization Service (JAAS) </i>
-    </li>
-    </ul>
-    Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l'intégrer avec Tomcat. Pour cela, il faut:
-    </p>
-    <br>
-    <ol>
-        <li> Implémenter <b>org.apache.catalina.Realm</b></li>
-        <li>Placer ce Realm dans <b>$CATALINA_HOME/lib</b></li>
-        <li>Déclarer le Realm</li>
-    </ol>
-    <h2>Configuration Generale d'un Realm</h2>
-    <p> En général, un Realm est configuré еn ajoutant au fichier <b>conf/server.xml</b> un élément sous la forme:
-        <div style='background-color:#a2a2dc'>
+        </li>
+        </ul>
+        Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l'intégrer avec Tomcat. Pour cela, il faut:
+        </p>
+        <br>
+        <ol>
+            <li> Implémenter <b>org.apache.catalina.Realm</b></li>
+            <li>Placer ce Realm dans <b>$CATALINA_HOME/lib</b></li>
+            <li>Déclarer le Realm</li>
+        </ol>
+        <h2>Configuration Generale d'un Realm</h2>
+        <p> En général, un Realm est configuré еn ajoutant au fichier <b>conf/server.xml</b> un élément sous la forme:
+            <div style='background-color:#a2a2dc'>
 
-            &lt;Realm className="...nom de classe de l'implémentation"
-            <br> ...autres attributs.../&gt;
+                &lt;Realm className="...nom de classe de l'implémentation"
+                <br> ...autres attributs.../&gt;
 
-        </div>
-        <p> La position du Realm permet de définir sa visibilité:
-            <ul>
-                <li><i>Dans &lt;Engine&gt;</i>- Le Realm est partagé pour toutes les applications sur tous les hôtes, sauf si défini explicitement dans un élément <i>&lt;Host&gt;</i> ou <i>&lt;Context&gt;</i></li>
-                <li><i>Dans &lt;Host&gt;</i>- Le Realm est partagé pour toutes les applications sur l'hôte spécifique, sauf si défini explicitement dans un élément <i>&lt;Context&gt;</i></li>
-                <li><i>Dans &lt;Context&gt;</i>- Le Realm est utilisé seulement pour cette application Web.</li>
-            </ul>
+            </div>
+            <p> La position du Realm permet de définir sa visibilité:
+                <ul>
+                    <li><i>Dans &lt;Engine&gt;</i>- Le Realm est partagé pour toutes les applications sur tous les hôtes, sauf si défini explicitement dans un élément <i>&lt;Host&gt;</i> ou <i>&lt;Context&gt;</i></li>
+                    <li><i>Dans &lt;Host&gt;</i>- Le Realm est partagé pour toutes les applications sur l'hôte spécifique, sauf si défini explicitement dans un élément <i>&lt;Context&gt;</i></li>
+                    <li><i>Dans &lt;Context&gt;</i>- Le Realm est utilisé seulement pour cette application Web.</li>
+                </ul>
 </body>
 
 </html>
