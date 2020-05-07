@@ -64,12 +64,11 @@
                 <li>UserDatabaseRealm</li>
                 <li>MemoryRealm</li>
                 <li>JAASRealm</li>
-                <li>CombinedRealm</li>
                 <li>LockOutRealm</li>
             </ol>
-            <li>Fonctionnalités Communes</li>
+            <li>Sécurisation des mots de passe</li>
             <li>Attributs</li>
-            <li>Application: Implémenter un Realm Personnalisé dans Tomcat</li>
+            <li>Annexe</li>
         </ol>
     </ol>
 
@@ -77,7 +76,7 @@
 
     <p>Apache Tomcat est un conteneur web <em>open source</em> de servlets et JSP. Il implémente les spécifications des servlets et des JSP, est paramétrable à travers XML, inclut des outils de configuration et de gestion, ainsi qu'un serveur HTTP.</p>
 
-    <p>Ecrit en Java, il peut s'exécuter via JVM sur tout système d'exploitation. La gestion des servlets est effectuée par un compilateur Jasper, qui parse les fichiers JSP afain de les compiler en code Java en tant que servlets. Un des avantages de Japser est la capcité à recompiler automatiquement les fichiers JSP modifiés.</p>
+    <p>Ecrit en Java, il peut s'exécuter via JVM sur tout système d'exploitation. La gestion des servlets est effectuée par un compilateur Jasper, qui parse les fichiers JSP afin de les compiler en code Java en tant que servlets. Un des avantages de Jasper est la capcité à recompiler automatiquement les fichiers JSP modifiés.</p>
 
     <p>L'architecture du logiciel est définie comme suit:</p>
     <ul>
@@ -396,21 +395,51 @@
         </p>
         <br>
 
-<li><u>UserDatabaseRealm</u> - L'information est stockée dans une ressource UserDatabase JNDI, typiquement dans un document XML (conf/tomcat-users.xml).</li>
-        <li><u>MemoryRealm</u> - Une collection est initialisée dans un objet mémoire à travers un fichier XML (conf/tomcat-users.xml)</li>
+<li><u><b>UserDatabaseRealm</b></u>:
+<p>Implémentation de <strong>Realm</strong>, elle utilise une ressource JNDI pour stocker les données utilisateur soutenue par un fichier XML. Cette implémentation n'est pas recommandée pour la production à grande échelle, puisque le Realm charge les données utilisateur et roles au lancement de Tomcat. Les données sont modifiables à travers JMX en cours de session.</p>
+</li>
+        <li><u><strong>MemoryRealm</strong>:<br>
+          <br>
+        </u> Très similaire à UserDatabaseRealm, seules les modifications à travers JMX ne sont supportées. N'est pas recommandée dans la production.<br>
+        <br>
+        Comme UserDatabaseRealm, les données sont stockées dans un fichier XML (par défaut <em>conf/tomcat-users.xml</em>), dont l'él ément racine est <em>&lt;tomcat-users&gt;</em>, sous lequel on retrouve un élément <em>&lt;user&gt; </em>pour chaque utilisateur, ayant pour attributs:<br>
+        <strong>name</strong>, le nom utilisateur, <strong>password</strong> pour le mot de passe en clair (ou crypté si l'attribut <strong>digest</strong> est définit dans le Realm, comme décris plus tard), et <strong>roles</strong> contenant la liste des roles de l'utilisateur.<br>
+        <br>
+        </li>
         <li>
             <u>
-JAASRealm
-</u> - L'accès à l'information est effectué à travers le framework <i> Java Authentication &amp; Authorization Service (JAAS) </i>
+          <strong>JAASRealm</strong>:<br>
+          <br>
+          </u> L'accès à l'information est effectué à travers le framework <i> Java Authentication &amp; Authorization Service (JAAS)</i>, désormais faisant part de Java SE.<br>
+          <br>
+          Pour utiliser ce type de Realm, il faut:<br>
         </li>
+<ul>
+            <li>Développer 3 classes. Utilisateur, Role et LoginModule basées sur la spécification JAAS, gérées par <strong>javax.security.auth.login.LoginContext</strong></li>
+            <li>Il est recommandé de créer des classes séparées pour distingue l'utilisateur du role et étendant <strong>javax.security.Principal</strong>, afin que Tomcat puisse discerner le type d'objet retourné par le module de login. A noter que le premier object <strong>Principal</strong> retourné est traité comme Utilisateur.</li>
+            <li>Compiler et placer dans le classpath de Tomcat</li>
+            <li>Créér un fichier <strong>login.config</strong> et pointer le JVM vers sa place: <br>
+              <br>
+              <code>JAVA_OPTS=$JAVA_OPTS -Djava.security.auth.login.config==$CATALINA_BASE/conf/jaas.config</code><br>
+            </li>
+            <li>Configurer le Realm et redémarrer Tomcat<br>
+            </li>
+</ul>
         </ul>
-        Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l'intégrer avec Tomcat. Pour cela, il faut:
+        <p>Un exemple de configuration dans <strong>server.xml</strong> ressemblerait à ceci: </p>
+        <div style = 'background-color:#a2a2dc; display:inline-block'>&lt;Realm className=&quot;org.apache.catalina.realm.JAASRealm&quot; appName=&quot;MonRealm&quot;<br>
+          userClassNames=&quot;org.monpack.realm.monUser&quot;<br>
+          roleClassNames=&quot;org.foobar.realm.monRole&quot;
+        </div>
+        <p>Cette approche est préferable car ell donne une flexibilité à la configuration du login.<br>
         </p>
-        <br>
+<p>Il est aussi possible de créer sa propre implémentation <u> Realm </u> et de l'intégrer avec Tomcat. Pour cela, il faut:
+        </p>
+        </p>
         <ol>
-            <li> Implémenter <b>org.apache.catalina.Realm</b></li>
+          <li> Implémenter <b>org.apache.catalina.Realm</b></li>
             <li>Placer ce Realm dans <b>$CATALINA_HOME/lib</b></li>
-            <li>Déclarer le Realm</li>
+            <li>Déclarer le Realm dans <strong>$CATALINA_BASE/conf/server.xml </strong>et redémarrer Tomcat</li>
         </ol>
         <h2>Configuration Generale d'un Realm</h2>
         <p> En général, un Realm est configuré еn ajoutant au fichier <b>conf/server.xml</b> un élément sous la forme:
@@ -426,6 +455,12 @@ JAASRealm
                     <li><i>Dans &lt;Host&gt;</i>- Le Realm est partagé pour toutes les applications sur l'hôte spécifique, sauf si défini explicitement dans un élément <i>&lt;Context&gt;</i></li>
                     <li><i>Dans &lt;Context&gt;</i>- Le Realm est utilisé seulement pour cette application Web.</li>
                 </ul>
+<h2>3. Sécurisation des mots de passe</h2>
+
+<p>Dans chacune des implémentations Realm standard, le mot de passe utilisateur est stocké par défaut en clair. Cela est naturellement indésirable, car des observateurs peuvent obtenir des informations suffisantes pour imiter d'autres utilisateurs.</p>
+<p>Pour éviter ce problème, ces implémentations permettent le hachage des mots de passe (sous format non-réversible) que le Realm peut utiliser.</p>
+<p>Quand le Realm authentifie en comparant le mot de passe stocké à celui fourni par l'utilisateur, on peut hacher le mot de passe en plaçant un élément <strong>CredentialHandler</strong> dans le Realm. Il est recommandé d'utiliser <strong>MessageDigestCredentialHandler</strong> car il est configurable pour employer un des algorithmes de <strong>java.security.MessageDigest </strong>(SSHA, SHA ou MD5). Dans ce cas, le contenu de l'attribut userPassword serait le résultat du hachage du mot de passe de l'utilisateur à travers l'algorithme spécifié.</p>
+<p>A l'appel de <strong>authenticate()</strong>, le mot de passe fourni par l'utilisateur est traité par l'algorithme de hachage choisi, puis comparé à celui stocké.</p>                
 </body>
 
 </html>
